@@ -74,7 +74,34 @@ function App() {
       </div></div>
       <div className="footnote">Times shown in your local timezone (Asia/Jerusalem). Time windows are not necessarily the actual runtime of device actions.</div>
     </section>
-    {selected && <div className="modalBackdrop" onClick={()=>setSelected(null)}><div className="modal" onClick={e=>e.stopPropagation()}><button className="close" onClick={()=>setSelected(null)}>×</button><div className="eyebrow">AUTOMATION DETAILS</div><h3>{selected.name}</h3><p>{selected.start}</p><p>Days: {selected.weekdays.map(d=>days[d]).join(", ")}</p><p>Status: {selected.enabled?"Enabled":"Disabled"}</p></div></div>}
+    {selected && (
+      (() => {
+        // Helper to convert "HH:MM" string to total minutes
+        const toMinutes = (timeStr: any) => {
+          if (!timeStr) return 0;
+          const [hours, minutes] = timeStr.split(':').map(Number);
+          return hours * 60 + minutes;
+        };
+
+        const isGreaterThan10Min = (toMinutes(selected.end) - toMinutes(selected.start)) > 10;
+
+        return (
+          <div className="modalBackdrop" onClick={() => setSelected(null)}>
+            <div className="modal" onClick={e => e.stopPropagation()}>
+              <button className="close" onClick={() => setSelected(null)}>×</button>
+              <div className="eyebrow">AUTOMATION DETAILS</div>
+              <h3>{selected.name}</h3>
+
+              {/* Conditionally displays the end time only if the interval is > 10 minutes */}
+              <p>{selected.start}{isGreaterThan10Min ? ` – ${selected.end}` : ''}</p>
+
+              <p>Days: {selected.weekdays.map(d => days[d]).join(", ")}</p>
+              <p>Status: {selected.enabled ? "Enabled" : "Disabled"}</p>
+            </div>
+          </div>
+        );
+      })()
+    )}
     <footer>Tuya Weekly Planner <span>Starter UI · Demo data</span></footer>
     {loading && <div className="loading">Loading…</div>}
   </main>;
