@@ -2,6 +2,8 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { fetchTuyaHomes, fetchTuyaAutomations } from "./tuya.js";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const app = express();
 app.use(cors({ origin: "http://localhost:5173" }));
@@ -48,3 +50,24 @@ app.get("/api/homes/:homeId/automations", async (req, res) => {
 
 const port = Number(process.env.PORT || 3001);
 app.listen(port, () => console.log(`API listening at http://localhost:${port}`));
+
+
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Your existing API routes should be registered above this section.
+
+// Serve React production build
+const clientDist = path.resolve(__dirname, "../client/dist");
+
+app.use(express.static(clientDist));
+
+// React fallback for frontend routes
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api/")) {
+    return next();
+  }
+
+  res.sendFile(path.join(clientDist, "index.html"));
+});
